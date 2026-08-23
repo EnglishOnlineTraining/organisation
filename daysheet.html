@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Day sheet — Shaun Trezise</title>
+<style>
+  :root{
+    --ground:#0F1826;--card:#18243A;--sunk:#131E30;--line:#26344F;
+    --chalk:#E8EDF5;--dim:#7F8FAB;--signal:#F5B93C;--mint:#5FC7A4;--violet:#9B8CE8;
+    --mono: ui-monospace,"SF Mono","Roboto Mono","DejaVu Sans Mono",Menlo,Consolas,monospace;
+    --sans: system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--ground);color:var(--chalk);font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;padding:20px 16px 60px;max-width:640px;margin:0 auto}
+
+  .eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--dim);margin:0 0 10px}
+  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:4px}
+  h1{font-family:var(--mono);font-size:28px;line-height:1;font-weight:600;letter-spacing:-.02em;margin:0}
+  .date{font-family:var(--mono);font-size:12px;color:var(--dim);margin:6px 0 0}
+
+  .weeks{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:none}
+  .wk{display:inline-block;background:transparent;color:var(--dim);font-family:var(--mono);
+    font-size:11px;letter-spacing:.12em;padding:8px 11px;user-select:none}
+  .wk[aria-pressed="true"]{background:var(--signal);color:#0F1826;font-weight:700}
+
+  .nav{display:flex;gap:8px;align-items:center;margin:16px 0 20px}
+  .nav button{background:var(--sunk);border:1px solid var(--line);border-radius:8px;
+    color:var(--dim);font-family:var(--mono);font-size:12px;padding:8px 12px;cursor:pointer}
+  .nav button:hover{color:var(--chalk)}
+  .nav .spacer{flex:1}
+
+  .bar{height:3px;background:var(--line);border-radius:2px;overflow:hidden;margin:0 0 6px}
+  .bar i{display:block;height:100%;background:var(--mint);width:0;transition:width .2s}
+  .count{font-family:var(--mono);font-size:11px;color:var(--dim);margin:0 0 22px;letter-spacing:.06em}
+
+  h2{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--dim);font-weight:600;margin:26px 0 10px}
+
+  .task{display:flex;gap:12px;align-items:flex-start;background:var(--card);
+    border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:8px;
+    cursor:pointer;transition:.15s}
+  .task:hover{border-color:#33425F}
+  .box{width:20px;height:20px;border:1.5px solid var(--dim);border-radius:5px;flex:none;
+    margin-top:2px;position:relative}
+  .task.done .box{background:var(--mint);border-color:var(--mint)}
+  .task.done .box::after{content:"";position:absolute;left:6px;top:2px;width:5px;height:10px;
+    border:solid #0F1826;border-width:0 2px 2px 0;transform:rotate(45deg)}
+  .task.done .body{opacity:.4;text-decoration:line-through;text-decoration-color:var(--dim)}
+  .body{flex:1;min-width:0}
+  .t-time{font-family:var(--mono);font-size:11px;color:var(--signal);letter-spacing:.06em}
+  .t-main{font-size:15px;line-height:1.3;margin-top:2px}
+  .t-sub{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:3px;
+    display:flex;gap:8px;flex-wrap:wrap}
+  .chip{border:1px solid var(--line);border-radius:4px;padding:1px 6px}
+  .chip.only{border-color:var(--signal);color:var(--signal)}
+  .task.k-coach .t-time{color:var(--mint)}
+  .task.k-admin .t-time{color:var(--violet)}
+  .task.k-free{background:transparent;border-style:dashed;cursor:default}
+  .task.k-free .box{display:none}
+  .task.k-free .t-main{color:var(--dim);font-size:14px}
+
+  .del{background:none;border:0;color:var(--dim);font-family:var(--mono);font-size:16px;
+    line-height:1;padding:2px 4px;cursor:pointer;flex:none}
+  .del:hover{color:#E8776B}
+
+  .add{display:flex;gap:8px;margin-top:4px}
+  .add input{flex:1;background:var(--sunk);border:1px solid var(--line);border-radius:8px;
+    color:var(--chalk);font-family:var(--sans);font-size:14px;padding:11px 12px}
+  .add input::placeholder{color:var(--dim)}
+  .add input:focus{outline:none;border-color:var(--signal)}
+  .add button{background:var(--chalk);border:0;border-radius:8px;color:var(--ground);
+    font-family:var(--mono);font-size:12px;font-weight:700;padding:0 16px;cursor:pointer}
+
+  .rest{border:1px dashed var(--line);border-radius:10px;padding:26px 18px;text-align:center}
+  .rest .big{font-family:var(--mono);font-size:20px;color:var(--mint)}
+  .rest .small{font-size:14px;color:var(--dim);margin-top:6px}
+
+  footer{margin-top:32px;padding-top:14px;border-top:1px solid var(--line);
+    font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.7}
+  .warn{color:var(--signal)}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<p class="eyebrow">Philipp-Melanchthon-Gymnasium · Day sheet</p>
+<div class="head">
+  <div><h1 id="dayName">—</h1><p class="date" id="dateLine"></p></div>
+  <div class="weeks" aria-label="Current week">
+    <span class="wk" id="wkA" aria-pressed="false">A WEEK</span>
+    <span class="wk" id="wkB" aria-pressed="false">B WEEK</span>
+  </div>
+</div>
+
+<div class="nav">
+  <button id="prev">← PREV</button>
+  <button id="today">TODAY</button>
+  <span class="spacer"></span>
+  <button id="next">NEXT →</button>
+</div>
+
+<div class="bar"><i id="barFill"></i></div>
+<p class="count" id="count"></p>
+
+<div id="board"></div>
+
+<h2>My tasks</h2>
+<div id="mine"></div>
+<div class="add">
+  <input id="newTask" placeholder="Add something for this day…" maxlength="120">
+  <button id="addBtn">ADD</button>
+</div>
+
+<footer id="foot">
+  A/B week is calculated automatically from the anchor: <strong>Mon 24 Aug 2026 = A week</strong>, then alternates.<br>
+  Block 1 times (08:00–09:20) are inferred from the plan layout — the top rows were cut off in the photo.
+</footer>
+
+<script>
+const BLOCKS = {
+  B1 :{s:"08:00", e:"09:20"},
+  B2 :{s:"10:00", e:"11:20"},
+  CO1:{s:"11:20", e:"11:35"},
+  B3 :{s:"12:20", e:"13:40"},
+  B4 :{s:"13:50", e:"15:10"},
+  CO2:{s:"15:10", e:"15:25"}
+};
+const ORDER = ["B1","B2","CO1","B3","B4","CO2"];
+
+const WEEK = {
+  Mon: [],
+  Tue: [
+    {b:"B1",  w:"A",    kind:"lesson", cls:"9c",  room:"R9c"},
+    {b:"B1",  w:"B",    kind:"lesson", cls:"10a", room:"R10a"},
+    {b:"B2",  w:"both", kind:"admin",  label:"AG — Arbeitsgemeinschaft"},
+    {b:"CO1", w:"both", kind:"coach",  label:"Coaching"},
+    {b:"B3",  w:"B",    kind:"lesson", cls:"8c",  room:"R8c"},
+    {b:"CO2", w:"both", kind:"coach",  label:"Coaching"}
+  ],
+  Wed: [
+    {b:"B1",  w:"both", kind:"lesson", cls:"9b",  room:"R9b"},
+    {b:"B2",  w:"A",    kind:"lesson", cls:"8c",  room:"R8c"},
+    {b:"B2",  w:"B",    kind:"lesson", cls:"9c",  room:"R9c"},
+    {b:"CO1", w:"both", kind:"coach",  label:"Coaching", note:"Rundgang A (1) — A weeks"},
+    {b:"B3",  w:"A",    kind:"lesson", cls:"10a", room:"R10a"},
+    {b:"B3",  w:"B",    kind:"lesson", cls:"10c", room:"R10c"},
+    {b:"B4",  w:"A",    kind:"lesson", cls:"10c", room:"R10c"},
+    {b:"B4",  w:"B",    kind:"lesson", cls:"9a",  room:"R9a"},
+    {b:"CO2", w:"both", kind:"coach",  label:"Coaching"}
+  ],
+  Thu: [
+    {b:"B1",  w:"A",    kind:"admin",  label:"Präsenz"},
+    {b:"B1",  w:"B",    kind:"lesson", cls:"9c",  room:"R9c"},
+    {b:"B2",  w:"A",    kind:"lesson", cls:"9a",  room:"R9a"},
+    {b:"B2",  w:"B",    kind:"admin",  label:"Präsenz"},
+    {b:"CO1", w:"both", kind:"coach",  label:"Coaching"},
+    {b:"B3",  w:"both", kind:"lesson", cls:"8c",  room:"R8c"},
+    {b:"B4",  w:"both", kind:"admin",  label:"Pädagogischer Austausch"}
+  ],
+  Fri: [
+    {b:"B1",  w:"both", kind:"lesson", cls:"10c", room:"R10c"},
+    {b:"B2",  w:"both", kind:"lesson", cls:"10a", room:"R10a"},
+    {b:"CO1", w:"both", kind:"coach",  label:"Coaching"},
+    {b:"B3",  w:"A",    kind:"lesson", cls:"9b",  room:"R9b"},
+    {b:"B3",  w:"B",    kind:"lesson", cls:"9a",  room:"R9a"},
+    {b:"CO2", w:"both", kind:"coach",  label:"Coaching"}
+  ]
+};
+
+const KEYS  = ["Mon","Tue","Wed","Thu","Fri"];
+const FULL  = {Mon:"Montag",Tue:"Dienstag",Wed:"Mittwoch",Thu:"Donnerstag",Fri:"Freitag",
+               Sat:"Samstag",Sun:"Sonntag"};
+const DKEY  = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+let cursor = new Date();
+let state  = {done:{}, custom:[]};
+let saveOK = true;
+
+// A week anchor: Monday 24 August 2026
+const ANCHOR = new Date("2026-08-24T00:00:00");
+function currentWeek(){
+  const d = cursor;
+  const monday = new Date(d);
+  monday.setDate(d.getDate() - ((d.getDay()+6)%7));
+  monday.setHours(0,0,0,0);
+  const diffWeeks = Math.round((monday - ANCHOR) / (7*86400000));
+  return diffWeeks % 2 === 0 ? "A" : "B";
+}
+
+const iso = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+
+async function load(){
+  const key = "day:" + iso(cursor);
+  state = {done:{}, custom:[]};
+  try{
+    const r = await window.storage.get(key);
+    if(r && r.value) state = JSON.parse(r.value);
+  }catch(e){ /* nothing saved for this day, or storage unavailable */ }
+  if(!state.done) state.done = {};
+  if(!state.custom) state.custom = [];
+}
+async function save(){
+  try{
+    await window.storage.set("day:" + iso(cursor), JSON.stringify(state));
+  }catch(e){
+    if(saveOK){
+      saveOK = false;
+      document.getElementById("foot").insertAdjacentHTML("afterbegin",
+        '<span class="warn">Ticks are not saving on this device — they will reset.</span><br>');
+    }
+  }
+}
+function planFor(dayKey){
+  const week = currentWeek();
+  const items = WEEK[dayKey];
+  if(!items) return null;
+  if(!items.length) return [];
+  const used = new Set(items.map(i=>i.b));
+  const out = [];
+  ORDER.forEach(b=>{
+    if(!used.has(b)) return;
+    const hit = items.find(i=>i.b===b && (i.w===week || i.w==="both"));
+    out.push(hit ? {...hit, id:b} : {b, id:b, kind:"free"});
+  });
+  return out;
+}
+
+function taskRow(o){
+  const cls = "task k-"+o.kind + (o.done ? " done" : "");
+  return '<div class="'+cls+'" data-id="'+esc(o.id)+'" data-kind="'+o.kind+'">'+
+    '<div class="box"></div>'+
+    '<div class="body">'+
+      (o.time ? '<div class="t-time">'+o.time+'</div>' : '')+
+      '<div class="t-main">'+esc(o.main)+'</div>'+
+      (o.chips && o.chips.length
+        ? '<div class="t-sub">'+o.chips.map(c=>'<span class="chip'+(c.only?" only":"")+'">'+esc(c.t)+'</span>').join("")+'</div>'
+        : '')+
+      (o.note ? '<div class="t-sub">'+esc(o.note)+'</div>' : '')+
+    '</div>'+
+    (o.custom ? '<button class="del" data-del="'+esc(o.id)+'" aria-label="Delete">×</button>' : '')+
+  '</div>';
+}
+
+function render(){
+  const dayKey = DKEY[cursor.getDay()];
+  const week = currentWeek();
+  document.getElementById("dayName").textContent = FULL[dayKey];
+  document.getElementById("dateLine").textContent =
+    cursor.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}) +
+    " · " + week + " week";
+  document.getElementById("wkA").setAttribute("aria-pressed", String(week==="A"));
+  document.getElementById("wkB").setAttribute("aria-pressed", String(week==="B"));
+
+  const board = document.getElementById("board");
+  const plan = planFor(dayKey);
+  let checkable = 0, done = 0;
+
+  if(plan === null){
+    board.innerHTML = '<div class="rest"><div class="big">Weekend</div>'+
+      '<div class="small">Nothing on the timetable.</div></div>';
+  } else if(plan.length === 0){
+    board.innerHTML = '<div class="rest"><div class="big">Homeoffice</div>'+
+      '<div class="small">No lessons on site. Only your own tasks below.</div></div>';
+  } else {
+    let html = '<h2>From the timetable</h2>';
+    plan.forEach(it=>{
+      const B = BLOCKS[it.b];
+      if(it.kind === "free"){
+        html += taskRow({id:it.id, kind:"free", main:"Free block", time:B.s+"–"+B.e});
+        return;
+      }
+      const chips = [];
+      if(it.room) chips.push({t:it.room});
+      if(it.w !== "both") chips.push({t:it.w+" weeks only", only:true});
+      const isDone = !!state.done[it.id];
+      checkable++; if(isDone) done++;
+      html += taskRow({
+        id:it.id, kind:it.kind, done:isDone,
+        time:B.s+"–"+B.e,
+        main: it.cls ? "Teach "+it.cls+" — Englisch" : it.label,
+        chips, note:it.note
+      });
+    });
+    board.innerHTML = html;
+  }
+
+  // my tasks
+  let mine = "";
+  state.custom.forEach(c=>{
+    checkable++; if(c.done) done++;
+    mine += taskRow({id:c.id, kind:"mine", done:c.done, main:c.text, custom:true});
+  });
+  document.getElementById("mine").innerHTML = mine ||
+    '<p class="count" style="margin:0 0 8px">Nothing added yet.</p>';
+
+  const pct = checkable ? Math.round(done/checkable*100) : 0;
+  document.getElementById("barFill").style.width = pct+"%";
+  document.getElementById("count").textContent =
+    checkable ? done+" of "+checkable+" done" : "Nothing to tick off";
+}
+
+document.addEventListener("click", async e=>{
+  const del = e.target.closest("[data-del]");
+  if(del){
+    state.custom = state.custom.filter(c=>c.id !== del.dataset.del);
+    await save(); render(); return;
+  }
+  const t = e.target.closest(".task");
+  if(!t || t.dataset.kind === "free") return;
+  const id = t.dataset.id;
+  const c = state.custom.find(x=>x.id === id);
+  if(c) c.done = !c.done;
+  else state.done[id] = !state.done[id];
+  await save(); render();
+});
+
+async function addTask(){
+  const inp = document.getElementById("newTask");
+  const v = inp.value.trim();
+  if(!v) return;
+  state.custom.push({id:"c"+Date.now(), text:v, done:false});
+  inp.value = "";
+  await save(); render();
+}
+document.getElementById("addBtn").onclick = addTask;
+document.getElementById("newTask").addEventListener("keydown", e=>{ if(e.key==="Enter") addTask(); });
+
+async function go(days){
+  cursor = new Date(cursor.getTime() + days*86400000);
+  await load(); render();
+}
+document.getElementById("prev").onclick  = ()=>go(-1);
+document.getElementById("next").onclick  = ()=>go(1);
+document.getElementById("today").onclick = async ()=>{ cursor = new Date(); await load(); render(); };
+
+(async ()=>{ await load(); render(); })();
+</script>
+</body>
+</html>
